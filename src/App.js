@@ -7,25 +7,24 @@ import Search from "./Search";
 import * as BooksAPI from "./BooksAPI";
 import { Routes, Route, useLocation } from "react-router-dom";
 
+const DEBOUNCE_DELAY = 200 // 0.2s
+
 function App() {
   const [books, setBooks] = useState([])
   const [search, setSearch] = useState("")
   const [filteredBooks, setFilteredBooks] = useState([])
   const location = useLocation()
-
-  console.log("location", location)
-
+  const [debounceHandler, setDebouceHandler] = useState(null)
 
   useEffect(() => {
 
     const fetchBooks = async () => {
       try {
         const response = await BooksAPI.getAll()
-        console.log(response)
 
         setBooks(response)
       } catch (err) {
-        console.log("err" + err)
+        alert("Server couldn't load the books")
       }
     }
 
@@ -33,32 +32,42 @@ function App() {
   }, [])
 
   const handleMoveTo = async (book, newShelf) => {
-    console.log(`Move book "${book.title}" into shelf "${newShelf}"`)
-
     try {
+      // Update the book on server
       await BooksAPI.update(book, newShelf)
 
-      // Find the book in the list and modify the shelf to the new shelf
-      const newBooksList = books.map(item => {
-        if (book.id === item.id) {
-          item.shelf = newShelf
-          return item
-        } else {
-          return item
-        }
-      })
-
-      // Update state
+      // UI: Find the book in the list of all books and modify the shelf to the new shelf and update the books in the state
+      const newBooksList = changeShelf(books, newShelf, book.id)
       setBooks(newBooksList)
+
+      // UI: Find the book in the list of filtered books and modify the shelf to the new shelf and update the filtered books in the state
+      const newFilteredBooksList = changeShelf(filteredBooks, newShelf, book.id)
+      setFilteredBooks(newFilteredBooksList)
     } catch {
       // TODO shoe an error
       alert("Server couldn't update the book")
     }
   }
 
-  const handleSearch = async (query) => {
-    console.log(query)
+  /**
+   * 
+   * @param {the list of books} booksList 
+   * @param {* the new shelf} newShelf 
+   * @param {* the id of the book that has to update the shelf} bookId 
+   * @returns a new list of books that has a modified shelf for one specific id 
+   */
+  const changeShelf = (booksList, newShelf, bookId) => {
+    return booksList.map(book => {
+      if (bookId === book.id) {
+        book.shelf = newShelf
+        return book
+      } else {
+        return book
+      }
+    })
+  }
 
+  const handleSearch = async (query) => {
     setSearch(query)
 
     // if not query, stop
@@ -67,15 +76,36 @@ function App() {
       return
     }
 
-    const response = await BooksAPI.search(query)
-    console.log(response)
-
-    if (response.error) {
-      setFilteredBooks([])
-      return
-    } else {
-      setFilteredBooks(response)
+    // If a timeout job exists we clear it because we already have a new one
+    if (debounceHandler) {
+      clearTimeout(debounceHandler)
     }
+
+    // We don't call the server imediatelly, we wait 0.3 seconds just in case we press more characters
+    const newHandler = setTimeout(async () => {
+      const response = await BooksAPI.search(query)
+
+      if (response.error) {
+        setFilteredBooks([])
+        return
+      } else {
+        // We change the list of books we got from server and we set the shelf if we already have it set in the other list with all the books
+        response.map(responseBook => {
+          // If we have any book in the all books state we get its state and use it in our filtered list
+          const existingBook = books.find(book => book.id === responseBook.id)
+          if (existingBook) {
+            responseBook.shelf = existingBook.shelf;
+          } else {
+            responseBook.shelf = "none"
+          }
+
+          return responseBook
+        })
+        setFilteredBooks(response)
+      }
+    }, DEBOUNCE_DELAY) // to run after
+
+    setDebouceHandler(newHandler)
   }
 
   return (

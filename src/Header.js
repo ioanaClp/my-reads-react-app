@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import PropTypes from 'prop-types';
 
 
 const Header = ({ title, hasSearch, hasBackButton }) => {
@@ -8,7 +9,7 @@ const Header = ({ title, hasSearch, hasBackButton }) => {
 
             {hasBackButton && <Link to={"/"}>
                 <button className="search-button btn btn-dark">
-                    <i class="fas fa-arrow-left" style={{ fontSize: "18px" }}></i>
+                    <i className="fas fa-arrow-left" style={{ fontSize: "18px" }}></i>
                 </button>
             </Link>}
 
@@ -17,7 +18,7 @@ const Header = ({ title, hasSearch, hasBackButton }) => {
 
                 {hasSearch && <Link to={"/search"}>
                     <button className="search-button btn btn-dark">
-                        <i class="fas fa-search" style={{ fontSize: "18px" }}></i>
+                        <i className="fas fa-search" style={{ fontSize: "18px" }}></i>
                     </button>
                 </Link>}
 
@@ -25,5 +26,11 @@ const Header = ({ title, hasSearch, hasBackButton }) => {
         </nav>
     )
 }
+
+Header.propTypes = {
+    title: PropTypes.string,
+    hasSearch: PropTypes.bool,
+    hasBackButton: PropTypes.bool
+};
 
 export default Header;

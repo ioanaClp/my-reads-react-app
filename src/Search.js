@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import Book from "./Book";
+import PropTypes from 'prop-types';
 
 const Search = ({ search, setSearch, books, handleMoveTo }) => {
 
@@ -37,5 +38,12 @@ const Search = ({ search, setSearch, books, handleMoveTo }) => {
         </div>
     )
 }
+
+Search.propTypes = {
+    search: PropTypes.string,
+    setSearch: PropTypes.func,
+    books: PropTypes.array,
+    handleMoveTo: PropTypes.func
+};
 
 export default Search;

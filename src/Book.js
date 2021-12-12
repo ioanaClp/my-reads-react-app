@@ -1,6 +1,7 @@
 import React from "react";
+import PropTypes from 'prop-types';
 
-const Book = ({ book, handleMoveTo }) => {
+const Book = ({ book, handleMoveTo, getShelf }) => {
     let thumbnail = "";
     if (book.imageLinks && book.imageLinks.thumbnail) {
         thumbnail = book.imageLinks.thumbnail
@@ -42,7 +43,7 @@ const Book = ({ book, handleMoveTo }) => {
                         >Read</div>
                         <div
                             style={{ cursor: "pointer" }}
-                            className={`dropdown-item`}
+                            className={`dropdown-item ${book.shelf === "none" && "active"}`}
                             onClick={() => handleMoveTo(book, "none")}
                         >None</div>
                     </div>
@@ -55,5 +56,10 @@ const Book = ({ book, handleMoveTo }) => {
         </div>
     )
 }
+
+Book.propTypes = {
+    book: PropTypes.object,
+    handleMoveTo: PropTypes.func
+};
 
 export default Book;

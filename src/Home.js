@@ -1,5 +1,6 @@
 import React from "react";
 import Shelf from "./Shelf";
+import PropTypes from 'prop-types';
 
 const Home = ({ books, handleMoveTo }) => {
     return (
@@ -10,5 +11,10 @@ const Home = ({ books, handleMoveTo }) => {
         </main>
     )
 }
+
+Home.propTypes = {
+    books: PropTypes.array,
+    handleMoveTo: PropTypes.func
+};
 
 export default Home;
